@@ -1,0 +1,200 @@
+First Data upload 
+
+We can upload data by 3 methods 
+
+
+
+1) Data from script
+2) Data from URL
+3) Data from json file
+
+1) Data from Script
+
+curl -X POST 'http://localhost:9200/tutorial/helloworld/1' -d '{"director": "Rohan Parikh", "genre": ["Comedy","Action"], "year": 3017, "actor": ["Kadvo Kathiyavadi ","Mayank Patel","Hanik Patel"], "title": "Defence!"}' -H 'Content-Type: application/json'
+
+is equivalent to
+
+import urllib2, urllib, json
+data = '{"director": "Rohan Parikh", "genre": ["Comedy","Action"], "year": 3017, "actor": ["Kadvo Kathiyavadi ","Mayank Patel","Hanik Patel"], "title": "Defence!"}'
+#data = urllib.urlopen("https://api.github.com/users?since=10").read()
+url = 'http://localhost:9200/mar25/1'
+req = urllib2.Request(url, data, {'Content-Type': 'application/json'})
+f = urllib2.urlopen(req)
+for x in f:
+    print(x)
+f.close()
+
+
+Output 
+{"_index":"tutorial","_type":"helloworld","_id":"1","_version":2,"result":"updated","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":1,"_primary_term":1}
+
+
+
+
+
+2) Data from URL
+
+import requests
+res = requests.get('http://localhost:9200')
+print(res.content)
+
+from elasticsearch import Elasticsearch
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
+
+import json
+r = requests.get('http://localhost:9200') 
+i = 1
+while r.status_code == 200:
+    r = requests.get('http://swapi.co/api/people/'+ str(i))
+    es.index(index='sw', doc_type='people', id=i, body=json.loads(r.content))
+    i=i+1
+ 
+print(i)
+_______________________
+
+{
+  "name" : "My First Node",
+  "cluster_name" : "mycluster1",
+  "cluster_uuid" : "-OdNgAExSSun_bBEUHnC8g",
+  "version" : {
+    "number" : "6.2.2",
+    "build_hash" : "10b1edd",
+    "build_date" : "2018-02-16T19:01:30.685723Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.2.1",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
+18
+
+
+
+3) Data from Json File
+
+import requests
+
+headers = {
+    'Content-Type': 'application/x-ndjson',
+}
+
+params = (
+    ('pretty', ''),
+)
+
+data = open('hospital.json', 'rb').read()
+response = requests.post('http://localhost:9200/hospital/doc/_bulk', headers=headers, params=params, data=data)
+#NB. Original query string below. It seems impossible to parse and
+#reproduce query strings 100% accurately so the one below is given
+#in case the reproduced version is not "correct".
+# response = requests.post('http://localhost:9200/hospital/doc/_bulk?pretty', headers=headers, data=data)
+
+
+
+
+
+#curl -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/hospital/doc/_bulk?pretty' --data-binary @hospital.json 
+
+
+
+
+Now for mapping the data
+
+Means we can predefine that if input is integer than only take it or else it will skip it
+
+
+We can perform it by 2 times
+
+1) By directly putting it into Kibana Konsole
+
+PUT /hospital_new_2
+{
+ "mappings": {
+  "doc": {
+   "properties": {
+    "doc_id": {"type": "integer"},
+    "doc_name": {"type": "text"},
+    "hospital_name": {"type": "text"},
+    "patient_id": {"type": "integer"},
+    "patient_name": {"type": "text"},
+    "city": {"type": "text"},
+    "desease": {"type": "text"}
+   }
+  }
+ }
+}
+
+
+
+2) By making a Python Script 
+
+
+from elasticsearch import Elasticsearch
+# conntect es
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+# delete index if exists
+if es.indices.exists('hospital_new_3'):
+    es.indices.delete(index='hospital_new_3')
+# index mappings
+
+settings = {
+    "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+    },
+    "mappings": {
+      "doc": {
+   	  "properties": {
+    		"doc_id": {"type": "integer"},
+    		"doc_name": {"type": "text"},
+    		"hospital_name": {"type": "text"},
+    		"patient_id": {"type": "integer"},
+    		"patient_name": {"type": "text"},
+    		"city": {"type": "text"},
+    		"desease": {"type": "text"}
+   }
+  }
+ }
+}
+
+# create index
+es.indices.create(index='hospital_new_3', ignore=400, body=settings)
+
+
+
+from elasticsearch import Elasticsearch
+# conntect es
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+# delete index if exists
+if es.indices.exists('hospital_new_3'):
+    es.indices.delete(index='hospital_new_3')
+# index mappings
+
+settings = {
+    "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+    },
+    "mappings": {
+      "doc": {
+   	  "properties": {
+    		"doc_id": {"type": "integer"},
+    		"doc_name": {"type": "text"},
+    		"hospital_name": {"type": "text"},
+    		"patient_id": {"type": "integer"},
+    		"patient_name": {"type": "text"},
+    		"city": {"type": "text"},
+    		"desease": {"type": "text"}
+   }
+  }
+ }
+}
+
+# create index
+es.indices.create(index='hospital_new_3', ignore=400, body=settings)
+So first run this script and than the data upload script
+

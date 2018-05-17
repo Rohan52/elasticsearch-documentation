@@ -1,0 +1,207 @@
+Elasticsearch is search and analytical engine which lets you perform and combine many types of searches — structured, unstructured, geo, metric 
+
+
+Kibana lets you visualize your Elasticsearch data
+Kibana is an open source analytics and visualization platform designed to work with Elasticsearch
+______________________
+Elasticsearch Download
+______________________
+
+https://www.elastic.co/downloads/elasticsearch
+
+Prerequisites
+
+JDK 8 
+
+Here for windows go for zip and for linux go for tar or deb
+
+Download and unzip Elasticsearch
+
+Run bin/elasticsearch (or bin\elasticsearch.bat on Windows)
+
+To check whether it is running or not go to http://localhost:9200/
+
+
+For ubuntu I go for deb
+
+Then dpkg it
+
+sudo dpkg -i elasticsearch-2.3.1.deb
+
+
+
+To make sure Elasticsearch starts and stops automatically with the server, add its init script to the default runlevels.
+
+sudo systemctl enable elasticsearch.service
+
+
+sudo nano /etc/elasticsearch/elasticsearch.yml
+
+. . .
+cluster.name: mycluster1
+node.name: "My First Node"
+. . .
+
+
+network.host: 0.0.0.0
+
+curl -X GET 'http://localhost:9200'
+{
+  "name" : "My First Node",
+  "cluster_name" : "mycluster1",
+  "cluster_uuid" : "-OdNgAExSSun_bBEUHnC8g",
+  "version" : {
+    "number" : "6.2.2",
+    "build_hash" : "10b1edd",
+    "build_date" : "2018-02-16T19:01:30.685723Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.2.1",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
+_______________
+Kibana Download
+_______________
+
+
+Download and unzip Kibana 
+
+
+    Open config/kibana.yml in an editor
+    Set elasticsearch.url to point at your Elasticsearch instance
+
+Run bin/kibana (or bin\kibana.bat on Windows)
+
+
+
+
+
+You can add your first entry with the command:
+
+    curl -X POST 'http://localhost:9200/tutorial/helloworld/1' -d '{ "message": "Hello World!" }'
+
+You should see the following response:
+
+Output
+{"_index":"tutorial","_type":"helloworld","_id":"1","_version":1,"_shards":{"total":2,"successful":1,"failed":0},"created":true}
+
+With curl, we have sent an HTTP POST request to the Elasticsearch server. The URI of the request was /tutorial/helloworld/1 with several parameters:
+
+    tutorial is the index of the data in Elasticsearch.
+    helloworld is the type.
+    1 is the id of our entry under the above index and type.
+
+
+
+
+This command is in CURL 
+
+curl -X POST 'http://localhost:9200/tutorial/helloworld/1' -d '{"director": "Rohan Parikh", "genre": ["Comedy","Action"], "year": 3017, "actor": ["Kadvo Kathiyavadi ","Mayank Patel","Hanik Patel"], "title": "Defence!"}' -H 'Content-Type: application/json'
+
+is equivalent to
+
+import urllib2, urllib, json
+data = '{"director": "Rohan Parikh", "genre": ["Comedy","Action"], "year": 3017, "actor": ["Kadvo Kathiyavadi ","Mayank Patel","Hanik Patel"], "title": "Defence!"}'
+#data = urllib.urlopen("https://api.github.com/users?since=10").read()
+url = 'http://localhost:9200/mar25/1'
+req = urllib2.Request(url, data, {'Content-Type': 'application/json'})
+f = urllib2.urlopen(req)
+for x in f:
+    print(x)
+f.close()
+
+
+Output 
+{"_index":"tutorial","_type":"helloworld","_id":"1","_version":2,"result":"updated","_shards":{"total":2,"successful":1,"failed":0},"_seq_no":1,"_primary_term":1}
+
+You can see the index in Kibana as well
+
+Go to Management --> Index Pattern --> create new index
+
+
+_______________________________________________________________________________________________________________________
+
+Now I also found a way to send data from a url
+___________________________________________________________________
+
+import requests
+res = requests.get('http://localhost:9200')
+print(res.content)
+
+from elasticsearch import Elasticsearch
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
+
+import json
+r = requests.get('http://localhost:9200') 
+i = 1
+while r.status_code == 200:
+    r = requests.get('http://swapi.co/api/people/'+ str(i))
+    es.index(index='sw', doc_type='people', id=i, body=json.loads(r.content))
+    i=i+1
+ 
+print(i)
+_______________________
+
+{
+  "name" : "My First Node",
+  "cluster_name" : "mycluster1",
+  "cluster_uuid" : "-OdNgAExSSun_bBEUHnC8g",
+  "version" : {
+    "number" : "6.2.2",
+    "build_hash" : "10b1edd",
+    "build_date" : "2018-02-16T19:01:30.685723Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.2.1",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
+18
+
+
+
+
+
+
+Discover To query
+
+Visulize To make data Visulization
+
+Dashboard To put data visulizations together
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Point your browser at http://localhost:5601 
